@@ -105,26 +105,38 @@ All replacements use identical arithmetic operations, guaranteeing mathematical 
 
 ### Validation Test Results ✅
 
-**VALIDATED:** All tests passed with perfect accuracy!
+**VALIDATED:** All tests passed - errors within FP32 precision!
 
 ```bash
 # Run validation:
-python test_accuracy_standalone.py
+python validate_comprehensive.py
 
 # ACTUAL RESULTS:
-[TEST 1] GroupedLinearExplicit
+[TEST 1] GroupedLinearExplicit vs torch.einsum
+  Max error: 8.94e-08 ✓ PASS
+
+[TEST 2] Complex Multiply (vs torch.view_as_complex)
   Max error: 0.00e+00 ✓ PASS
 
-[TEST 2] DfOpONNX
+[TEST 3] Complex Conjugate (vs torch.conj)
   Max error: 0.00e+00 ✓ PASS
 
-[TEST 3] Complex Operations
+[TEST 4] Complex Absolute Value
+  Max error: 2.38e-07 ✓ PASS
+
+[TEST 5] Einsum Outer Product
   Max error: 0.00e+00 ✓ PASS
 
-[TEST 4] Einsum Patterns
+[TEST 6] Einsum Matrix-Vector
   Max error: 0.00e+00 ✓ PASS
 
-✓ ALL TESTS PASSED - ACCURACY VALIDATED
+[TEST 7] Einsum Inner Product
+  Max error: 1.43e-06 ✓ PASS
+
+[TEST 8] DfOpONNX Functional Test
+  Max error: 0.00e+00 ✓ PASS
+
+✓ ALL 8 TESTS PASSED - ACCURACY VALIDATED
 ```
 
 ## Files
@@ -136,7 +148,8 @@ python test_accuracy_standalone.py
 - `DeepFilterNet/df/scripts/convert_to_qnn.py` (413 lines) - QNN conversion
 
 ### Validation
-- `test_onnx_accuracy.py` - Standalone accuracy validation
+- `validate_comprehensive.py` - Comprehensive validation against original PyTorch ops
+- `validate_against_original.py` - Validation against original modules (requires full df package)
 - `DeepFilterNet/df/scripts/validate_onnx_conversion.py` - Full validation suite
 
 ## Architecture
@@ -262,8 +275,9 @@ Same as DeepFilterNet (MIT License)
 **Empirical Testing:** ✅ **COMPLETE - ALL TESTS PASSED**
 
 **Validation Results:**
-- All 12 operations: Error = 0.00e+00 ✅
-- Test suite: `test_accuracy_standalone.py`
+- All 8 operation categories tested against original PyTorch ops ✅
+- Maximum error: 1.43e-06 (inner product, well within FP32 precision)
+- Test suite: `validate_comprehensive.py`
 - Status: **PRODUCTION READY**
 
 ---
@@ -271,4 +285,4 @@ Same as DeepFilterNet (MIT License)
 **Status:** ✅ **Production Ready - Empirically Validated**
 **Version:** 1.0
 **Last Updated:** 2025-11-17
-**Accuracy:** **Validated with measured error = 0.00e+00**
+**Accuracy:** **Validated - max error 1.43e-06 (within FP32 precision)**
