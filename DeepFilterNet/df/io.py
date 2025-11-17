@@ -13,10 +13,24 @@ try:
     TA_RESAMPLE_SINC = "sinc_interp_hann"
     TA_RESAMPLE_KAISER = "sinc_interp_kaiser"
 except ImportError:
-    from torchaudio.backend.common import AudioMetaData
+    try:
+        from torchaudio.backend.common import AudioMetaData
 
-    TA_RESAMPLE_SINC = "sinc_interpolation"
-    TA_RESAMPLE_KAISER = "kaiser_window"
+        TA_RESAMPLE_SINC = "sinc_interpolation"
+        TA_RESAMPLE_KAISER = "kaiser_window"
+    except (ImportError, ModuleNotFoundError):
+        # For torchaudio >= 2.1 without backend module
+        from typing import NamedTuple
+
+        class AudioMetaData(NamedTuple):
+            sample_rate: int
+            num_frames: int
+            num_channels: int
+            bits_per_sample: Optional[int] = None
+            encoding: Optional[str] = None
+
+        TA_RESAMPLE_SINC = "sinc_interp_hann"
+        TA_RESAMPLE_KAISER = "sinc_interp_kaiser"
 
 from df.logger import warn_once
 from df.utils import download_file, get_cache_dir, get_git_root
@@ -43,10 +57,23 @@ def load_audio(
     rkwargs = {}
     if "method" in kwargs:
         rkwargs["method"] = kwargs.pop("method")
-    info: AudioMetaData = ta.info(file, **ikwargs)
-    if "num_frames" in kwargs and sr is not None:
-        kwargs["num_frames"] *= info.sample_rate // sr
-    audio, orig_sr = ta.load(file, **kwargs)
+
+    # Try to use ta.info if available, otherwise load first to get metadata
+    try:
+        info: AudioMetaData = ta.info(file, **ikwargs)
+        if "num_frames" in kwargs and sr is not None:
+            kwargs["num_frames"] *= info.sample_rate // sr
+        audio, orig_sr = ta.load(file, **kwargs)
+    except (AttributeError, TypeError):
+        # torchaudio >= 2.1 doesn't have ta.info, just load directly
+        audio, orig_sr = ta.load(file, **kwargs)
+        # Create AudioMetaData from load result
+        info = AudioMetaData(
+            sample_rate=orig_sr,
+            num_frames=audio.shape[-1],
+            num_channels=audio.shape[0] if audio.ndim > 1 else 1,
+        )
+
     if sr is not None and orig_sr != sr:
         if verbose:
             warn_once(
