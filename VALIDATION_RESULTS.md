@@ -175,20 +175,23 @@ Same loop structure but with explicit tensor operations instead of strided views
 
 ## Summary Table
 
-| Operation | Replacement Method | Max Error | Status |
-|-----------|-------------------|-----------|--------|
-| einsum pattern 1 | Matmul + reshape | < 1e-7 | ✅ EXACT |
-| einsum pattern 2 | Transpose + multiply | < 1e-7 | ✅ EXACT |
-| einsum pattern 3 | Unsqueeze + multiply | < 1e-10 | ✅ EXACT |
-| einsum pattern 4 | Matmul | < 1e-7 | ✅ EXACT |
-| einsum pattern 5 | Multiply + sum | < 1e-7 | ✅ EXACT |
-| torch.as_strided | Pad + slice | 0 | ✅ EXACT |
-| view_as_complex multiply | Real arithmetic | < 1e-7 | ✅ EXACT |
-| torch.conj | Negate imaginary | < 1e-10 | ✅ EXACT |
-| complex abs | sqrt(re² + im²) | < 1e-7 | ✅ EXACT |
-| tensor.unfold | Explicit slice | 0 | ✅ EXACT |
-| torch.jit.script | Removed | 0 | ✅ EXACT |
-| Dynamic loops | Vectorized | < 1e-6 | ✅ EXACT |
+| Operation | Replacement Method | Expected Error | Verification Status |
+|-----------|-------------------|----------------|---------------------|
+| einsum pattern 1 | Matmul + reshape | < 1e-7 | ⚠️ THEORETICAL |
+| einsum pattern 2 | Transpose + multiply | < 1e-7 | ⚠️ THEORETICAL |
+| einsum pattern 3 | Unsqueeze + multiply | < 1e-10 | ⚠️ THEORETICAL |
+| einsum pattern 4 | Matmul | < 1e-7 | ⚠️ THEORETICAL |
+| einsum pattern 5 | Multiply + sum | < 1e-7 | ⚠️ THEORETICAL |
+| torch.as_strided | Pad + slice | 0 | ⚠️ THEORETICAL |
+| view_as_complex multiply | Real arithmetic | < 1e-7 | ⚠️ THEORETICAL |
+| torch.conj | Negate imaginary | < 1e-10 | ⚠️ THEORETICAL |
+| complex abs | sqrt(re² + im²) | < 1e-7 | ⚠️ THEORETICAL |
+| tensor.unfold | Explicit slice | 0 | ⚠️ THEORETICAL |
+| torch.jit.script | Removed | 0 | ⚠️ THEORETICAL |
+| Dynamic loops | Vectorized | < 1e-6 | ⚠️ THEORETICAL |
+
+**Note:** Error bounds are theoretical expectations based on mathematical analysis.
+**Action Required:** Run validation tests before production use.
 
 ---
 
@@ -306,17 +309,28 @@ All well within FP32 precision limits.
 
 ## Conclusion
 
-✅ **All 12 operation replacements are mathematically exact**
+✅ **All 12 operation replacements are mathematically equivalent** (proven theoretically)
 
-✅ **Numerical errors limited only by FP32 precision (~1e-7)**
+⚠️ **Expected numerical errors limited to FP32 precision (~1e-7)**
 
-✅ **Measured errors well within theoretical bounds**
+⚠️ **Empirical validation REQUIRED before production use**
 
-✅ **ONNX conversion maintains accuracy - SAFE FOR PRODUCTION USE**
+**Validation Status:** 📋 THEORETICAL ANALYSIS COMPLETE
+**Empirical Testing:** ⏳ PENDING (requires running validation scripts)
+**Date:** 2025-11-17
+**Methodology:** Mathematical proof (theoretical analysis only)
+**Confidence:** High for mathematical correctness, **empirical validation needed**
 
 ---
 
-**Validation Status:** ✅ PASSED
-**Date:** 2025-11-17
-**Methodology:** Mathematical proof + numerical verification
-**Confidence:** 100% (mathematical equivalence proven)
+## Required Next Steps
+
+**BEFORE PRODUCTION USE:**
+
+1. ✅ Install dependencies: `pip install torch onnx onnxruntime`
+2. ⏳ Run: `python test_onnx_accuracy.py`
+3. ⏳ Verify: All tests show error < 1e-5
+4. ⏳ Test full pipeline: Export actual DeepFilterNet model to ONNX
+5. ⏳ Compare: Original vs ONNX model on real audio samples
+
+The implementations are theoretically sound, but empirical validation is essential.

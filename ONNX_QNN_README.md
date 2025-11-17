@@ -52,7 +52,7 @@ output = output.reshape(B, T, H)
 
 **Proof:** Einstein summation over indices is equivalent to batch matrix multiplication after appropriate reshaping.
 
-**Numerical Error:** < 1e-7 (verified mathematically, limited only by FP32 precision)
+**Expected Numerical Error:** < 1e-7 (theoretical, limited by FP32 precision)
 
 #### 2. DfOpONNX (replaces `torch.as_strided`)
 
@@ -70,7 +70,7 @@ for i in range(window_size):
 
 **Proof:** Memory striding is equivalent to padding followed by indexed slicing. No data transformation occurs.
 
-**Numerical Error:** 0 (exact equivalence - no arithmetic operations)
+**Expected Numerical Error:** 0 (exact equivalence - no arithmetic operations)
 
 #### 3. Complex Multiply (replaces `torch.view_as_complex`)
 
@@ -91,7 +91,7 @@ result = torch.stack([real, imag], dim=-1)
 
 **Proof:** Standard complex multiplication formula. Mathematically identical.
 
-**Numerical Error:** < 1e-7 (same floating point operations)
+**Expected Numerical Error:** < 1e-7 (same floating point operations)
 
 #### 4-5. Additional Einsum Patterns
 
@@ -105,23 +105,27 @@ All replacements use identical arithmetic operations, guaranteeing mathematical 
 
 ### Validation Test Results
 
-Run `python test_onnx_accuracy.py` to verify:
+**⚠️ IMPORTANT:** Validation tests have NOT been run yet. Expected results based on theoretical analysis:
 
-```
+```bash
+# Run this to verify accuracy:
+python test_onnx_accuracy.py
+
+# Expected output (THEORETICAL):
 [TEST 1] GroupedLinearExplicit
-  Max error: < 1e-7 ✓ PASS
+  Expected max error: < 1e-7
 
 [TEST 2] DfOpONNX
-  Max error: < 1e-6 ✓ PASS
+  Expected max error: < 1e-6
 
 [TEST 3] Complex Operations
-  Max error: < 1e-10 ✓ PASS
+  Expected max error: < 1e-10
 
 [TEST 4] Einsum Patterns
-  Max error: < 1e-7 ✓ PASS
-
-CONCLUSION: All 12+ operations maintain accuracy
+  Expected max error: < 1e-7
 ```
+
+**Action Required:** Run validation before using in production.
 
 ## Files
 
@@ -251,7 +255,22 @@ Same as DeepFilterNet (MIT License)
 
 ---
 
-**Status:** ✅ Production Ready
+## ⚠️ Validation Status
+
+**Implementation:** ✅ Complete (12+ operations replaced)
+**Theoretical Analysis:** ✅ Complete (mathematical proofs provided)
+**Empirical Testing:** ⏳ **PENDING - REQUIRED BEFORE PRODUCTION USE**
+
+**To validate:**
+```bash
+pip install torch onnx onnxruntime onnxsim
+python test_onnx_accuracy.py
+python -m df.scripts.export_onnx_enhanced ./models/DeepFilterNet2 ./onnx_models --validate-conversion
+```
+
+---
+
+**Status:** 🚧 Awaiting Empirical Validation
 **Version:** 1.0
 **Last Updated:** 2025-11-17
-**Accuracy:** Validated (error < 1e-6)
+**Accuracy:** Theoretically proven, empirical testing needed
