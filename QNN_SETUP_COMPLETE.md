@@ -46,7 +46,7 @@ export PATH=/tmp/qairt/2.35.0.250530/bin/x86_64-linux-clang:$PATH
 ### Input Model
 - **File:** `/home/user/DeepFilterNet/onnx_models/enc.onnx`
 - **Size:** 1.9 MB
-- **Format:** ONNX opset 15
+- **Format:** ONNX opset 11 (QNN-compatible)
 - **Inputs:**
   - `feat_erb`: (1, 1, 100, 32) - ERB features
   - `feat_spec`: (1, 2, 100, 96) - Spectral features

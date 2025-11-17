@@ -187,7 +187,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Export DeepFilterNet to ONNX")
     parser.add_argument("model_dir", help="Path to model directory")
     parser.add_argument("output_dir", help="Output directory for ONNX models")
-    parser.add_argument("--opset", type=int, default=15, help="ONNX opset version")
+    parser.add_argument("--opset", type=int, default=11, help="ONNX opset version (use 11 or 13 for QNN)")
 
     args = parser.parse_args()
 
